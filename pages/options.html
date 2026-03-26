@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transmission Remote — Settings</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    /* ── Page layout ─────────────────────────────────── */
+    body {
+      min-height: 100vh;
+      background: var(--bg-primary);
+      padding: 32px 16px 64px;
+    }
+
+    .page-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Page Header ─────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .page-header-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--accent-muted);
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .page-header-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .page-header-text h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .page-header-text p {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* ── Section Card ────────────────────────────────── */
+    .section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-header-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+    }
+    .section-header-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .section-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Form grid ───────────────────────────────────── */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .field-hint {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 3px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 80px 120px;
+      gap: 12px;
+    }
+
+    /* ── Password row ────────────────────────────────── */
+    .pw-wrap {
+      position: relative;
+    }
+    .pw-wrap .input {
+      padding-right: 36px;
+    }
+    .btn-eye {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      padding: 4px 6px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      border-radius: var(--radius-sm);
+      transition: color var(--transition-fast);
+    }
+    .btn-eye:hover {
+      color: var(--text-secondary);
+    }
+    .btn-eye svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* ── Test connection result ──────────────────────── */
+    .conn-result {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      border: 1px solid transparent;
+    }
+    .conn-result.success {
+      background: var(--green-muted);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: var(--green);
+    }
+    .conn-result.error {
+      background: var(--red-muted);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: var(--red);
+    }
+    .conn-result .icon {
+      flex-shrink: 0;
+    }
+
+    /* ── Section actions ─────────────────────────────── */
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-tertiary);
+      flex-wrap: wrap;
+    }
+
+    /* ── Toggle Switch ───────────────────────────────── */
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-active);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-default);
+      transition: background var(--transition-normal), border-color var(--transition-normal);
+    }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 12px;
+      height: 12px;
+      background: var(--text-tertiary);
+      border-radius: 50%;
+      transition: transform var(--transition-normal), background var(--transition-normal);
+    }
+    .toggle-switch input:checked + .toggle-track {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .toggle-switch input:checked + .toggle-track + .toggle-thumb,
+    .toggle-switch input:checked ~ .toggle-thumb {
+      transform: translateX(16px);
+      background: #fff;
+    }
+    .toggle-switch input:checked ~ .toggle-track {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    /* Sibling selector approach for the thumb */
+    .toggle-switch input:checked + .toggle-track {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── Schedule days ───────────────────────────────── */
+    .days-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .day-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 28px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      transition: all var(--transition-fast);
+    }
+    .day-chip:hover {
+      border-color: var(--border-default);
+      color: var(--text-primary);
+    }
+    .day-chip.active {
+      background: var(--accent-muted);
+      border-color: rgba(59, 130, 246, 0.5);
+      color: var(--accent);
+    }
+
+    .day-separator {
+      width: 1px;
+      height: 20px;
+      background: var(--border-subtle);
+      margin: 0 4px;
+    }
+
+    .quick-btn {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      height: 24px;
+    }
+
+    /* ── Schedule time row ───────────────────────────── */
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-row .field-label {
+      min-width: 32px;
+    }
+
+    /* ── Separator in schedule body ──────────────────── */
+    .section-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 2px 0;
+    }
+
+    /* ── About section ───────────────────────────────── */
+    .about-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .about-row:last-child {
+      border-bottom: none;
+    }
+    .about-row .label {
+      color: var(--text-secondary);
+    }
+    .about-row .value {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .about-row a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .about-row a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Speed limit rows ────────────────────────────── */
+    .limit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .limit-row .checkbox-wrapper {
+      min-width: 160px;
+    }
+    .limit-row .input {
+      width: 110px;
+      flex-shrink: 0;
+    }
+    .limit-row .unit {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    /* ── Disabled input styling ──────────────────────── */
+    .input:disabled, .select:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ── Footer credit ───────────────────────────────── */
+    .page-footer {
+      text-align: center;
+      padding-top: 8px;
+    }
+    .page-footer a {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+    .page-footer a:hover {
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-icon" id="ph-icon"></div>
+      <div class="page-header-text">
+        <h1>Transmission Remote — Settings</h1>
+        <p>Configure your Transmission daemon connection and preferences</p>
+      </div>
+    </div>
+
+    <!-- ── SECTION: Server Connection ── -->
+    <div class="section" id="section-connection">
+      <div class="section-header">
+        <span class="section-header-icon" id="icon-server"></span>
+        <span class="section-title">Server Connection</span>
+      </div>
+      <div class="section-body">
+
+        <div class="three-col">
+          <div class="field-group" style="grid-column:1 / span 1">
+            <label class="field-label" for="cfg-host">Host</label>
+            <input type="text" class="input" id="cfg-host" value="localhost" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-port">Port</label>
+            <input type="number" class="input" id="cfg-port" value="9091" min="1" max="65535">
+          </div>
+          <div class="field-group">
+            <div class="field-label" style="margin-bottom:5px">Use HTTPS</div>
+            <label class="checkbox-wrapper" for="cfg-https">
+              <input type="checkbox" id="cfg-https">
+              <span>Enable HTTPS</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="cfg-path">RPC Path</label>
+          <input type="text" class="input" id="cfg-path" value="/transmission/rpc" autocomplete="off" spellcheck="false">
+        </div>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label" for="cfg-username">Username</label>
+            <input type="text" class="input" id="cfg-username" placeholder="(optional)" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-password">Password</label>
+            <div class="pw-wrap">
+              <input type="password" class="input" id="cfg-password" placeholder="(optional)" autocomplete="off">
+              <button class="btn-eye" id="btn-toggle-pw" type="button" title="Show/hide password">
+                <svg id="pw-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="conn-result-wrap" class="hidden">
+          <div class="conn-result" id="conn-result">
+            <span id="conn-result-icon" class="icon"></span>
+            <span id="conn-result-text"></span>
+          </div>
+        </div>
+
+      </div>
+      <div class="section-actions">
+        <button class="btn" id="btn-test-conn">
+          <span id="icon-test-conn" class="icon"></span>
+          Test Connection
+        </button>
+        <button class="btn btn-primary" id="btn-save-conn">
+          <span id="icon-save-conn" class="icon"></span>
+          Save
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION: Turtle Mode ── -->
+    <div class="section" id="section-turtle">
+      <div class="section-header">
+        <span class="section-header-icon" id="icon-turtle-hdr"></span>
+        <span class="section-title">Turtle Mode (Alt Speed)</span>
+      </div>
+      <div class="section-body">
+
+        <!-- Enable toggle -->
+        <div class="toggle-wrapper">
+          <label class="toggle-switch" for="turtle-enabled" title="Enable Turtle Mode">
+            <input type="checkbox" id="turtle-enabled">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <label class="toggle-label" for="turtle-enabled">Enable Turtle Mode</label>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Speed limits -->
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label" for="turtle-down">Download Limit (KB/s)</label>
+            <input type="number" class="input" id="turtle-down" min="0" placeholder="e.g. 500">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="turtle-up">Upload Limit (KB/s)</label>
+            <input type="number" class="input" id="turtle-up" min="0" placeholder="e.g. 50">
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Schedule -->
+        <div class="field-group">
+          <label class="checkbox-wrapper" for="turtle-sched-enabled">
+            <input type="checkbox" id="turtle-sched-enabled">
+            <span>Enable schedule</span>
+          </label>
+        </div>
+
+        <div id="turtle-sched-fields" class="hidden" style="display:flex;flex-direction:column;gap:12px">
+          <div class="two-col">
+            <div class="field-group">
+              <label class="field-label" for="turtle-sched-start">Schedule Start</label>
+              <input type="time" class="input" id="turtle-sched-start" value="09:00">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="turtle-sched-end">Schedule End</label>
+              <input type="time" class="input" id="turtle-sched-end" value="17:00">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="field-label" style="margin-bottom:6px">Schedule Days</div>
+            <div class="days-grid" id="days-grid">
+              <div class="day-chip" data-bit="2"  title="Monday">Mo</div>
+              <div class="day-chip" data-bit="4"  title="Tuesday">Tu</div>
+              <div class="day-chip" data-bit="8"  title="Wednesday">We</div>
+              <div class="day-chip" data-bit="16" title="Thursday">Th</div>
+              <div class="day-chip" data-bit="32" title="Friday">Fr</div>
+              <div class="day-chip" data-bit="64" title="Saturday">Sa</div>
+              <div class="day-chip" data-bit="1"  title="Sunday">Su</div>
+              <div class="day-separator"></div>
+              <button class="btn btn-sm quick-btn" id="days-weekdays">Weekdays</button>
+              <button class="btn btn-sm quick-btn" id="days-weekends">Weekends</button>
+              <button class="btn btn-sm quick-btn" id="days-all">All</button>
+            </div>
+            <div class="field-hint">Selected days are highlighted in blue</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" id="btn-save-turtle">
+          <span id="icon-save-turtle" class="icon"></span>
+          Save Turtle Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION: Speed Limits (Global) ── -->
+    <div class="section" id="section-speed">
+      <div class="section-header">
+        <span class="section-header-icon" id="icon-speed-hdr"></span>
+        <span class="section-title">Speed Limits (Global)</span>
+      </div>
+      <div class="section-body">
+
+        <div class="limit-row">
+          <label class="checkbox-wrapper" style="min-width:170px" for="speed-down-enabled">
+            <input type="checkbox" id="speed-down-enabled">
+            <span>Limit download speed</span>
+          </label>
+          <input type="number" class="input" id="speed-down-limit" min="0" placeholder="1024" style="width:110px">
+          <span class="unit">KB/s</span>
+        </div>
+
+        <div class="limit-row">
+          <label class="checkbox-wrapper" style="min-width:170px" for="speed-up-enabled">
+            <input type="checkbox" id="speed-up-enabled">
+            <span>Limit upload speed</span>
+          </label>
+          <input type="number" class="input" id="speed-up-limit" min="0" placeholder="100" style="width:110px">
+          <span class="unit">KB/s</span>
+        </div>
+
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" id="btn-save-speed">
+          <span id="icon-save-speed" class="icon"></span>
+          Save Speed Limits
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION: About ── -->
+    <div class="section" id="section-about">
+      <div class="section-header">
+        <span class="section-header-icon" id="icon-about-hdr"></span>
+        <span class="section-title">About</span>
+      </div>
+      <div class="section-body">
+        <div class="about-row">
+          <span class="label">Extension Version</span>
+          <span class="value" id="about-version">—</span>
+        </div>
+        <div class="about-row">
+          <span class="label">Transmission RPC Docs</span>
+          <a href="https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md" target="_blank" rel="noopener noreferrer">
+            rpc-spec.md ↗
+          </a>
+        </div>
+        <div class="about-row">
+          <span class="label">GitHub Repository</span>
+          <a href="#" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer credit -->
+    <div class="page-footer">
+      <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">
+        Created with Perplexity Computer
+      </a>
+    </div>
+
+  </div><!-- /.page-wrap -->
+
+  <script src="../js/helpers.js"></script>
+  <script src="../js/options.js"></script>
+</body>
+</html>
