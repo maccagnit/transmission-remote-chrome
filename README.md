@@ -59,7 +59,7 @@ This extension communicates directly with Transmission's **JSON-RPC API** over H
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/transmission-remote-chrome.git
+   git clone https://github.com/maccagnit/transmission-remote-chrome.git
    ```
 
 2. Open Chrome and navigate to `chrome://extensions/`
