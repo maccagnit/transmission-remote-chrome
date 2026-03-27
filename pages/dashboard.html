@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Created with Perplexity Computer — https://www.perplexity.ai/computer -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Transmission Remote</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <style>
+    /* ─── Full Viewport Shell ─────────────────────────────────── */
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ─── Top Bar ─────────────────────────────────────────────── */
+    .topbar {
+      flex-shrink: 0;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 100;
+      gap: 16px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 26px;
+      height: 26px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-icon svg { width: 15px; height: 15px; color: #fff; }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .topbar-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      min-width: 0;
+    }
+
+    .topbar-stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .topbar-stat .icon { color: var(--text-tertiary); }
+    .topbar-stat .val {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .topbar-sep {
+      color: var(--border-default);
+      margin: 0 12px;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .topbar-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-sans);
+    }
+    .topbar-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+    .topbar-btn:active { transform: scale(0.93); }
+    .topbar-btn.turtle-active {
+      color: var(--teal);
+      background: rgba(20, 184, 166, 0.12);
+      border-color: rgba(20, 184, 166, 0.3);
+      box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
+    }
+    .topbar-btn.primary-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .topbar-btn.primary-btn:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    /* ─── Add Bar (collapsible) ───────────────────────────────── */
+    .add-bar {
+      flex-shrink: 0;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.2s ease, border-bottom-width 0.2s;
+      border-bottom: 0px solid var(--border-subtle);
+      background: var(--bg-secondary);
+    }
+    .add-bar.open {
+      max-height: 52px;
+      border-bottom-width: 1px;
+    }
+    .add-bar-inner {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      gap: 8px;
+    }
+    .add-input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+    .add-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-muted);
+    }
+    .add-input::placeholder { color: var(--text-muted); font-size: 11px; }
+
+    .add-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .add-checkbox-label input { accent-color: var(--accent); cursor: pointer; }
+
+    .add-submit {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-md);
+      color: #fff;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .add-submit:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .add-submit:active { transform: scale(0.96); }
+
+    /* ─── Toolbar ─────────────────────────────────────────────── */
+    .toolbar {
+      flex-shrink: 0;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .search-wrap {
+      position: relative;
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .search-icon {
+      position: absolute;
+      left: 7px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      pointer-events: none;
+      display: flex;
+    }
+    .search-input {
+      width: 100%;
+      padding: 5px 8px 5px 26px;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-muted);
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .filter-pills {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border: 1px solid transparent;
+      border-radius: var(--radius-full);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .filter-pill:hover { color: var(--text-secondary); background: var(--bg-hover); }
+    .filter-pill.active {
+      background: var(--accent-muted);
+      border-color: rgba(59,130,246,0.3);
+      color: var(--accent);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .sort-select {
+      padding: 4px 22px 4px 8px;
+      font-size: 11px;
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      transition: border-color var(--transition-fast);
+    }
+    .sort-select:focus { border-color: var(--accent); color: var(--text-primary); }
+
+    .sort-dir-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .sort-dir-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-default); }
+
+    /* ─── Body Layout (list + sidebar) ───────────────────────── */
+    .body-wrap {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ─── Torrent List Area ───────────────────────────────────── */
+    .list-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      transition: margin-right var(--transition-normal);
+    }
+    .list-area.sidebar-open {
+      margin-right: 420px;
+    }
+
+    .torrent-list-wrap {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .torrent-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Each torrent row */
+    .torrent-item {
+      position: relative;
+      padding: 10px 14px 9px;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      user-select: none;
+      border-left: 3px solid transparent;
+    }
+    .torrent-item:last-child { border-bottom: none; }
+    .torrent-item:hover { background: var(--bg-surface); }
+    .torrent-item.selected {
+      background: rgba(59, 130, 246, 0.07);
+      border-left-color: var(--accent);
+      border-bottom-color: rgba(59, 130, 246, 0.12);
+    }
+    .torrent-item.selected:hover { background: rgba(59, 130, 246, 0.11); }
+
+    /* Row 1: badge + name + actions */
+    .torrent-row1 {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+    .torrent-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .torrent-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .torrent-item:hover .torrent-actions,
+    .torrent-item.selected .torrent-actions { opacity: 1; }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-sans);
+      padding: 0;
+    }
+    .action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .action-btn.danger:hover { background: var(--red-muted); color: var(--red); }
+
+    .remove-wrap { position: relative; }
+    .row-remove-dropdown {
+      position: fixed;
+      min-width: 170px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      z-index: 9000;
+      padding: 4px;
+    }
+
+    /* Progress bar row */
+    .torrent-progress-row { margin-bottom: 5px; }
+
+    .progress-bar {
+      width: 100%;
+      height: 3px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 0.5s ease;
+      background: var(--accent);
+    }
+    .progress-bar-fill.seeding  { background: var(--green); }
+    .progress-bar-fill.stopped  { background: var(--text-muted); }
+    .progress-bar-fill.error    { background: var(--red); }
+    .progress-bar-fill.checking { background: var(--purple); }
+    .progress-bar-fill.queued   { background: var(--yellow); }
+
+    /* Stats row */
+    .torrent-stats {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .torrent-stats .stat-piece {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+    .torrent-stats .stat-piece .icon { color: var(--text-tertiary); }
+    .torrent-stats .stat-sep { color: var(--border-default); }
+
+    /* ─── Empty / Error / Loading States ─────────────────────── */
+    .state-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+      gap: 10px;
+    }
+    .state-view .state-icon {
+      width: 40px;
+      height: 40px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .state-view .state-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .state-view .state-desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    .loading-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 10px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+
+    .connection-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+      gap: 8px;
+    }
+    .connection-error .err-icon { width: 40px; height: 40px; color: var(--red); margin-bottom: 4px; }
+    .connection-error .err-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .connection-error .err-desc { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; max-width: 320px; }
+
+    /* ─── Bulk Action Bar (floating) ──────────────────────────── */
+    .bulk-bar {
+      position: absolute;
+      bottom: 36px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      gap: 8px;
+      animation: slide-up 0.15s ease;
+    }
+    .bulk-bar.hidden { display: none; }
+
+    @keyframes slide-up {
+      from { transform: translateY(6px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+
+    .bulk-count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .bulk-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bulk-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .bulk-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-default); }
+    .bulk-btn.danger:hover { background: var(--red-muted); color: var(--red); border-color: rgba(239,68,68,0.3); }
+    .bulk-close {
+      width: 22px; height: 22px;
+      border: none; background: transparent; color: var(--text-tertiary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); flex-shrink: 0; font-family: var(--font-sans);
+    }
+    .bulk-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    /* ─── Bottom Status Bar ───────────────────────────────────── */
+    .status-bar {
+      flex-shrink: 0;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .status-bar-left { display: flex; align-items: center; gap: 14px; }
+    .status-bar-right { display: flex; align-items: center; gap: 10px; }
+    .status-bar a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+    .status-bar a:hover { color: var(--text-tertiary); }
+
+    /* ─── SIDEBAR DETAIL PANEL ────────────────────────────────── */
+    .sidebar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 420px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--transition-normal);
+      z-index: 50;
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-header {
+      flex-shrink: 0;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-tertiary);
+    }
+    .sidebar-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sidebar-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .sidebar-close {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+      font-family: var(--font-sans);
+      margin-top: 1px;
+    }
+    .sidebar-close:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-default); }
+
+    .sidebar-progress-bar {
+      width: 100%;
+      height: 5px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .sidebar-progress-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 0.5s ease;
+      background: var(--accent);
+    }
+    .sidebar-progress-fill.seeding  { background: var(--green); }
+    .sidebar-progress-fill.stopped  { background: var(--text-muted); }
+    .sidebar-progress-fill.error    { background: var(--red); }
+    .sidebar-progress-fill.checking { background: var(--purple); }
+    .sidebar-progress-fill.queued   { background: var(--yellow); }
+
+    .sidebar-quick-stats {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+    .sq-stat {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .sq-stat .icon { color: var(--text-tertiary); }
+    .sq-sep {
+      color: var(--border-default);
+      margin: 0 7px;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* ─── Sidebar Tabs ────────────────────────────────────────── */
+    .sidebar-tabs {
+      flex-shrink: 0;
+      display: flex;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .stab-btn {
+      flex: 1;
+      padding: 9px 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-sans);
+    }
+    .stab-btn:hover { color: var(--text-secondary); }
+    .stab-btn.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+
+    /* ─── Sidebar Content ─────────────────────────────────────── */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .stab-panel { display: none; padding: 0; }
+    .stab-panel.active { display: block; }
+
+    /* ─── Info Tab Styles ─────────────────────────────────────── */
+    .info-section {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .info-section:last-child { border-bottom: none; }
+    .info-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0;
+    }
+    .info-row { display: contents; }
+    .info-label {
+      padding: 5px 10px 5px 0;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+    }
+    .info-value {
+      padding: 5px 0;
+      font-size: 11px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      word-break: break-word;
+      min-width: 0;
+    }
+    .info-value.mono {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+    .info-value.error-text { color: var(--red); }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: 500;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+      font-family: var(--font-sans);
+    }
+    .copy-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    .label-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: 500;
+      background: var(--accent-muted);
+      color: var(--accent);
+      border-radius: var(--radius-full);
+      margin-right: 3px;
+    }
+
+    /* ─── Peers Tab (sidebar) ─────────────────────────────────── */
+    .peers-summary {
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-tertiary);
+    }
+    .peers-summary span { color: var(--text-primary); font-weight: 500; }
+
+    .sidebar-table-wrap {
+      overflow-x: auto;
+    }
+    .sidebar table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .sidebar thead th {
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition: color var(--transition-fast);
+    }
+    .sidebar thead th:hover { color: var(--text-primary); }
+    .sidebar thead th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+    .sidebar thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+    .sidebar tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition-fast);
+    }
+    .sidebar tbody tr:last-child { border-bottom: none; }
+    .sidebar tbody tr:hover { background: var(--bg-hover); }
+    .sidebar tbody td {
+      padding: 6px 10px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    .peer-mini-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      min-width: 30px;
+    }
+    .peer-mini-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+    }
+
+    /* ─── Trackers Tab (sidebar) ──────────────────────────────── */
+    .tracker-tier-group { padding: 0; }
+    .tracker-tier-label {
+      padding: 6px 14px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+    .tracker-card {
+      margin: 0 14px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      transition: border-color var(--transition-fast);
+    }
+    .tracker-card:hover { border-color: var(--border-default); }
+    .tracker-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .tracker-host {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .tracker-announce-state {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+    }
+    .tracker-state-active   { background: var(--accent-muted);   color: var(--accent); }
+    .tracker-state-waiting  { background: var(--yellow-muted);   color: var(--yellow); }
+    .tracker-state-inactive { background: rgba(107,114,128,.15); color: var(--text-tertiary); }
+    .tracker-url {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+    .tracker-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .tracker-stat-block {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+    }
+    .tracker-stat-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+    .tracker-stat-row {
+      display: flex;
+      gap: 4px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      font-size: 10px;
+    }
+    .tracker-result-success { color: var(--green); font-weight: 500; }
+    .tracker-result-fail    { color: var(--red);   font-weight: 500; }
+    .tracker-result-timeout { color: var(--yellow); font-weight: 500; }
+    .tracker-result-none    { color: var(--text-tertiary); }
+    .tracker-stat-detail    { color: var(--text-secondary); }
+
+    /* ─── Files Tab (sidebar) ─────────────────────────────────── */
+    .files-tree-sidebar {
+      border-top: none;
+    }
+    .file-tree-header-sidebar {
+      display: grid;
+      grid-template-columns: 1fr 60px 100px 44px;
+      padding: 6px 14px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .file-tree-header-sidebar span { cursor: pointer; user-select: none; transition: color var(--transition-fast); }
+    .file-tree-header-sidebar span:hover { color: var(--text-primary); }
+    .file-tree-header-sidebar span.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+    .file-tree-header-sidebar span.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+    .tree-folder-row-s {
+      display: grid;
+      grid-template-columns: 1fr 60px 100px 44px;
+      align-items: center;
+      padding: 5px 14px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .tree-folder-row-s:hover { background: var(--bg-hover); }
+    .folder-name-s {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .folder-name-s svg { width: 12px; height: 12px; color: var(--yellow); }
+    .folder-chevron-s {
+      display: inline-flex;
+      transition: transform var(--transition-fast);
+      width: 12px; height: 12px; flex-shrink: 0;
+    }
+    .folder-chevron-s svg { width: 12px; height: 12px; color: var(--text-tertiary); }
+    .folder-row-open-s .folder-chevron-s { transform: rotate(180deg); }
+
+    .tree-file-row-s {
+      display: grid;
+      grid-template-columns: 1fr 60px 100px 44px;
+      align-items: center;
+      padding: 4px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition-fast);
+    }
+    .tree-file-row-s:hover { background: var(--bg-hover); }
+    .file-name-cell-s {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+    .file-indent-s { flex-shrink: 0; }
+    .file-name-text-s {
+      font-size: 11px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-size-cell-s {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      text-align: right;
+      padding-right: 6px;
+    }
+    .file-progress-cell-s { padding-right: 4px; }
+    .file-progress-wrap-s {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .file-mini-bar-s {
+      flex: 1;
+      height: 3px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .file-mini-fill-s {
+      height: 100%;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+    }
+    .file-mini-fill-s.complete { background: var(--green); }
+    .file-pct-s {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      min-width: 28px;
+      text-align: right;
+    }
+    .wanted-checkbox-s {
+      width: 13px; height: 13px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin: auto;
+      display: block;
+    }
+
+    /* ─── Tab empty state ─────────────────────────────────────── */
+    .stab-empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+    .stab-loading {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+
+    /* ─── Context Menu ────────────────────────────────────────── */
+    #ctx-menu {
+      position: fixed;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      z-index: 9999;
+      padding: 4px;
+      min-width: 190px;
+      opacity: 0;
+      transform: scale(0.96) translateY(-4px);
+      transition: opacity 0.1s ease, transform 0.1s ease;
+      pointer-events: none;
+    }
+    #ctx-menu.open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: all;
+    }
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-sans);
+      transition: all var(--transition-fast);
+    }
+    .ctx-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .ctx-item.danger { color: var(--red); }
+    .ctx-item.danger:hover { background: var(--red-muted); }
+    .ctx-sep {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 4px 0;
+    }
+
+    /* ─── Responsive — sidebar as bottom sheet ────────────────── */
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 100%;
+        height: 50%;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: translateY(100%);
+        border-left: none;
+        border-top: 1px solid var(--border-default);
+      }
+      .sidebar.open { transform: translateY(0); }
+      .list-area.sidebar-open { margin-right: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .topbar-center { display: none; }
+      .filter-pills .filter-pill:not(.active) + .filter-pill:not(.active) + .filter-pill:not(.active) { display: none; }
+      .torrent-stats .stat-piece.hide-sm { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Top Bar ─────────────────────────────────────────── -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </div>
+        <span class="brand-name">Transmission Remote</span>
+      </div>
+
+      <div class="topbar-center" id="topbar-stats">
+        <span style="color:var(--text-muted);font-size:11px">Loading…</span>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-btn" id="btn-turtle" title="Toggle Alt Speed (Turtle Mode)">
+          <span class="icon" style="display:inline-flex;width:16px;height:16px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12A10 10 0 1 1 12 2"/><path d="M22 12h-4"/><path d="M12 22v-4"/>
+              <path d="M22 2l-5 5"/><path d="M17 2h5v5"/>
+            </svg>
+          </span>
+        </button>
+        <button class="topbar-btn primary-btn" id="btn-add" title="Add Torrent">
+          <span class="icon" style="display:inline-flex;width:15px;height:15px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </span>
+        </button>
+        <button class="topbar-btn" id="btn-settings" title="Settings">
+          <span class="icon" style="display:inline-flex;width:16px;height:16px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Add Torrent Bar ─────────────────────────────────── -->
+    <div class="add-bar" id="add-bar">
+      <div class="add-bar-inner">
+        <input type="text" class="add-input" id="add-input"
+          placeholder="Paste magnet link or .torrent URL…"
+          autocomplete="off" spellcheck="false">
+        <label class="add-checkbox-label">
+          <input type="checkbox" id="add-paused"> Paused
+        </label>
+        <button class="add-submit" id="add-submit">Add</button>
+      </div>
+    </div>
+
+    <!-- ── Toolbar ─────────────────────────────────────────── -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search torrents…" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="filter-pills" id="filter-pills">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="downloading">Downloading</button>
+        <button class="filter-pill" data-filter="seeding">Seeding</button>
+        <button class="filter-pill" data-filter="stopped">Stopped</button>
+        <button class="filter-pill" data-filter="active">Active</button>
+        <button class="filter-pill" data-filter="error">Error</button>
+      </div>
+
+      <div class="toolbar-right">
+        <select class="sort-select" id="sort-select">
+          <option value="queue">Queue</option>
+          <option value="name">Name</option>
+          <option value="added">Added</option>
+          <option value="size">Size</option>
+          <option value="progress">Progress</option>
+          <option value="speed">Speed</option>
+          <option value="ratio">Ratio</option>
+          <option value="status">Status</option>
+        </select>
+        <button class="sort-dir-btn" id="sort-dir-btn" title="Toggle sort direction">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="sort-dir-icon">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Body ───────────────────────────────────────────── -->
+    <div class="body-wrap">
+      <!-- List area -->
+      <div class="list-area" id="list-area">
+
+        <!-- Loading -->
+        <div id="loading-state" class="loading-row">
+          <div class="spinner"></div>
+          <span>Connecting…</span>
+        </div>
+
+        <!-- Connection error -->
+        <div id="connection-error" class="connection-error hidden">
+          <div class="err-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.5 12.5A7.5 7.5 0 0 1 12 5a7.5 7.5 0 0 1 5.3 2.2"/>
+              <path d="M1 1l22 22"/>
+              <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+              <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+              <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+              <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+              <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>
+          </div>
+          <div class="err-title">Cannot connect to Transmission</div>
+          <div class="err-desc" id="err-desc">Check that Transmission is running and the connection settings are correct.</div>
+          <button class="btn btn-primary" id="btn-configure" style="margin-top:10px;font-size:12px;padding:6px 16px;">
+            Configure Server
+          </button>
+        </div>
+
+        <!-- Torrent list wrap -->
+        <div class="torrent-list-wrap hidden" id="torrent-list-wrap">
+          <ul class="torrent-list" id="torrent-list"></ul>
+
+          <!-- Empty: no torrents -->
+          <div id="empty-no-torrents" class="state-view hidden">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 15a6 6 0 0 0 12 0v-6"/>
+                <path d="M2 9v6"/><path d="M22 9v6"/>
+                <path d="M2 9h4V3H2z"/><path d="M18 9h4V3h-4z"/>
+                <path d="M6 9V3"/><path d="M18 9V3"/>
+              </svg>
+            </div>
+            <div class="state-title">No torrents yet</div>
+            <div class="state-desc">Click + to add a magnet link or .torrent URL.</div>
+          </div>
+
+          <!-- Empty: filter no results -->
+          <div id="empty-no-results" class="state-view hidden">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <div class="state-title">No results</div>
+            <div class="state-desc">No torrents match your filter.</div>
+          </div>
+        </div>
+
+        <!-- Bulk Action Bar -->
+        <div class="bulk-bar hidden" id="bulk-bar">
+          <span class="bulk-count" id="bulk-count">0 selected</span>
+          <div class="bulk-actions">
+            <button class="bulk-btn" id="bulk-start">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Start
+            </button>
+            <button class="bulk-btn" id="bulk-stop">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              Stop
+            </button>
+            <button class="bulk-btn" id="bulk-verify">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Verify
+            </button>
+            <button class="bulk-btn danger" id="bulk-remove">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Remove
+            </button>
+          </div>
+          <button class="bulk-close" id="bulk-close" title="Dismiss">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div><!-- /list-area -->
+
+      <!-- ── Sidebar Detail Panel ─────────────────────────── -->
+      <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+          <div class="sidebar-title-row">
+            <div class="sidebar-name" id="sb-name">—</div>
+            <span class="badge" id="sb-badge"></span>
+            <button class="sidebar-close" id="sidebar-close" title="Close (Esc)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="sidebar-progress-bar">
+            <div class="sidebar-progress-fill" id="sb-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="sidebar-quick-stats" id="sb-quick-stats"></div>
+        </div>
+
+        <div class="sidebar-tabs">
+          <button class="stab-btn active" data-stab="info">Info</button>
+          <button class="stab-btn" data-stab="peers">Peers</button>
+          <button class="stab-btn" data-stab="trackers">Trackers</button>
+          <button class="stab-btn" data-stab="files">Files</button>
+        </div>
+
+        <div class="sidebar-content">
+
+          <!-- Info Tab -->
+          <div class="stab-panel active" id="stab-info">
+            <div id="sb-info-content">
+              <div class="stab-loading"><div class="spinner"></div><span>Loading…</span></div>
+            </div>
+          </div>
+
+          <!-- Peers Tab -->
+          <div class="stab-panel" id="stab-peers">
+            <div class="peers-summary" id="sb-peers-summary">—</div>
+            <div class="sidebar-table-wrap">
+              <table id="sb-peers-table">
+                <thead>
+                  <tr>
+                    <th data-sort="address">Address</th>
+                    <th data-sort="clientName">Client</th>
+                    <th data-sort="progress">Prog</th>
+                    <th data-sort="rateToClient">↓</th>
+                    <th data-sort="rateToPeer">↑</th>
+                    <th data-sort="flagStr">Flags</th>
+                    <th data-sort="encrypted">🔒</th>
+                  </tr>
+                </thead>
+                <tbody id="sb-peers-body"></tbody>
+              </table>
+            </div>
+            <div class="stab-empty hidden" id="sb-peers-empty">No peers connected</div>
+          </div>
+
+          <!-- Trackers Tab -->
+          <div class="stab-panel" id="stab-trackers">
+            <div id="sb-trackers-content" style="padding: 8px 0;"></div>
+            <div class="stab-empty hidden" id="sb-trackers-empty">No trackers configured</div>
+          </div>
+
+          <!-- Files Tab -->
+          <div class="stab-panel" id="stab-files">
+            <div class="files-tree-sidebar">
+              <div class="file-tree-header-sidebar">
+                <span data-col="name">Name</span>
+                <span data-col="size" style="text-align:right">Size</span>
+                <span data-col="progress">Progress</span>
+                <span data-col="wanted" style="text-align:center">Want</span>
+              </div>
+              <div id="sb-files-body"></div>
+            </div>
+            <div class="stab-empty hidden" id="sb-files-empty">No files available</div>
+          </div>
+
+        </div><!-- /sidebar-content -->
+      </aside><!-- /sidebar -->
+
+    </div><!-- /body-wrap -->
+
+    <!-- ── Bottom Status Bar ───────────────────────────────── -->
+    <footer class="status-bar">
+      <div class="status-bar-left">
+        <span id="status-last-updated">—</span>
+      </div>
+      <div class="status-bar-right">
+        <span id="status-server-info" style="color:var(--text-muted)">—</span>
+        <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">
+          Created with Perplexity Computer
+        </a>
+      </div>
+    </footer>
+
+  </div><!-- #app -->
+
+  <!-- ── Context Menu ─────────────────────────────────────── -->
+  <div id="ctx-menu">
+    <button class="ctx-item" data-action="start">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start
+    </button>
+    <button class="ctx-item" data-action="stop">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      Stop
+    </button>
+    <div class="ctx-sep"></div>
+    <button class="ctx-item" data-action="verify">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Verify Local Data
+    </button>
+    <button class="ctx-item" data-action="reannounce">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Reannounce
+    </button>
+    <button class="ctx-item" data-action="copy-magnet">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15a6 6 0 0 0 12 0v-6"/><path d="M2 9v6"/><path d="M22 9v6"/><path d="M2 9h4V3H2z"/><path d="M18 9h4V3h-4z"/><path d="M6 9V3"/><path d="M18 9V3"/></svg>
+      Copy Magnet Link
+    </button>
+    <div class="ctx-sep"></div>
+    <button class="ctx-item danger" data-action="remove">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Remove
+    </button>
+    <button class="ctx-item danger" data-action="remove-data">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      Remove &amp; Delete Data
+    </button>
+  </div>
+
+  <!-- Row-level remove dropdown (shared, repositioned per row) -->
+  <div class="row-remove-dropdown hidden" id="row-remove-dropdown">
+    <button class="dropdown-item danger" id="row-remove-keep">Remove Torrent</button>
+    <button class="dropdown-item danger" id="row-remove-delete">Remove &amp; Delete Data</button>
+  </div>
+
+  <script src="../js/helpers.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>
