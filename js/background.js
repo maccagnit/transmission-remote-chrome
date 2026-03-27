@@ -115,6 +115,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'GET_TORRENT_DETAIL') {
+    const detailFields = [
+      'id', 'name', 'status', 'percentDone', 'rateDownload', 'rateUpload',
+      'totalSize', 'eta', 'error', 'errorString', 'addedDate', 'doneDate',
+      'uploadRatio', 'uploadedEver', 'downloadedEver', 'sizeWhenDone',
+      'leftUntilDone', 'peersConnected', 'peersSendingToUs', 'peersGettingFromUs',
+      'queuePosition', 'labels', 'downloadDir', 'isFinished', 'isStalled',
+      'metadataPercentComplete', 'recheckProgress', 'bandwidthPriority',
+      'seedRatioLimit', 'seedRatioMode', 'activityDate', 'hashString',
+      'comment', 'creator', 'dateCreated', 'isPrivate', 'pieceCount', 'pieceSize',
+      'magnetLink', 'peers', 'trackers', 'trackerStats', 'files', 'fileStats',
+      'pieces', 'startDate', 'secondsDownloading', 'secondsSeeding',
+      'desiredAvailable', 'haveValid', 'haveUnchecked', 'availability',
+      'corruptEver', 'webseeds', 'webseedsSendingToUs',
+      'downloadLimit', 'downloadLimited', 'uploadLimit', 'uploadLimited',
+      'honorsSessionLimits', 'peer-limit', 'seedIdleLimit', 'seedIdleMode'
+    ];
+    client.request('torrent-get', { ids: message.ids, fields: detailFields })
+      .then(result => sendResponse({ success: true, data: result }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
   return false;
 });
 

@@ -35,7 +35,7 @@
   "options_page": "pages/options.html",
   "web_accessible_resources": [
     {
-      "resources": ["pages/magnet-dialog.html", "css/*", "js/*", "icons/*"],
+      "resources": ["pages/magnet-dialog.html", "pages/detail.html", "css/*", "js/*", "icons/*"],
       "matches": ["<all_urls>"]
     }
   ],

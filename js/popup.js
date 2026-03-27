@@ -512,6 +512,9 @@ function renderTorrentHTML(torrent) {
             <button class="dropdown-item danger" data-torrent-action="remove-data-confirm">Remove + delete data</button>
           </div>
         </div>
+        <button class="action-btn" data-torrent-action="expand" title="Open full view">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
         <button class="action-btn" data-torrent-action="more" title="More options">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
         </button>
@@ -533,6 +536,12 @@ function bindTorrentItemEvents(li, torrent) {
   li.addEventListener('click', (e) => {
     if (e.target.closest('[data-torrent-action]')) return; // handled separately
     handleTorrentClick(e, torrent.id);
+  });
+
+  // Double click — open full detail view
+  li.addEventListener('dblclick', (e) => {
+    if (e.target.closest('[data-torrent-action]')) return;
+    chrome.tabs.create({ url: chrome.runtime.getURL(`pages/detail.html#${torrent.id}`) });
   });
 
   // Right click — context menu
@@ -572,6 +581,8 @@ function bindTorrentItemEvents(li, torrent) {
       torrentAction('remove', [torrent.id], { deleteData: false });
     } else if (act === 'remove-data-confirm') {
       torrentAction('remove', [torrent.id], { deleteData: true });
+    } else if (act === 'expand') {
+      chrome.tabs.create({ url: chrome.runtime.getURL(`pages/detail.html#${torrent.id}`) });
     } else if (act === 'more') {
       state.ctxTorrentId = torrent.id;
       const rect = btn.getBoundingClientRect();
@@ -727,6 +738,9 @@ els.ctxMenu.addEventListener('click', async (e) => {
       break;
     case 'remove-data':
       await torrentAction('remove', [id], { deleteData: true });
+      break;
+    case 'open-detail':
+      chrome.tabs.create({ url: chrome.runtime.getURL(`pages/detail.html#${id}`) });
       break;
     case 'copy-magnet': {
       const torrent = state.torrents.find(t => t.id === id);
