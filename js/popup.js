@@ -55,6 +55,7 @@ const els = {
   bulkRemove:        $('bulk-remove'),
   bulkClose:         $('bulk-close'),
   btnTurtle:         $('btn-turtle'),
+  btnDashboard:      $('btn-dashboard'),
   btnSettings:       $('btn-settings'),
   btnRefresh:        $('btn-refresh'),
   btnConfigure:      $('btn-configure'),
@@ -864,6 +865,10 @@ async function addTorrent(uri) {
 function bindEvents() {
   // Header buttons
   els.btnTurtle.addEventListener('click', toggleTurtleMode);
+
+  els.btnDashboard.addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('pages/dashboard.html') });
+  });
 
   els.btnSettings.addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
