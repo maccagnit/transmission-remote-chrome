@@ -80,18 +80,26 @@
   // ── DOM refs — About ───────────────────────────────────────────
   const aboutVersion = document.getElementById('about-version');
 
-  // ── Helper: send a message and get a response ──────────────────
-  function send(msg) {
+  // ── Helper: send a message and get a response (with timeout) ───
+  function send(msg, timeoutMs = 10000) {
     return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error('No response from background — try reloading the extension'));
+      }, timeoutMs);
+
       try {
         chrome.runtime.sendMessage(msg, (resp) => {
+          clearTimeout(timer);
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
+          } else if (resp === undefined) {
+            reject(new Error('No response — background service worker may not be running'));
           } else {
             resolve(resp);
           }
         });
       } catch (err) {
+        clearTimeout(timer);
         reject(err);
       }
     });

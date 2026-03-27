@@ -66,17 +66,25 @@ const els = {
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
 
-function sendMsg(msg) {
+function sendMsg(msg, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('No response from background — try reloading the extension'));
+    }, timeoutMs);
+
     try {
       chrome.runtime.sendMessage(msg, response => {
+        clearTimeout(timer);
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message));
+        } else if (response === undefined) {
+          reject(new Error('No response — background service worker may not be running'));
         } else {
           resolve(response);
         }
       });
     } catch (err) {
+      clearTimeout(timer);
       reject(err);
     }
   });

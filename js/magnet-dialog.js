@@ -71,6 +71,31 @@
     window.close();
   }
 
+  // ── Helper: send message with timeout ──────────────────────────
+  function send(msg, timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error('No response from background — try reloading the extension'));
+      }, timeoutMs);
+
+      try {
+        chrome.runtime.sendMessage(msg, (resp) => {
+          clearTimeout(timer);
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (resp === undefined) {
+            reject(new Error('No response — background service worker may not be running'));
+          } else {
+            resolve(resp);
+          }
+        });
+      } catch (err) {
+        clearTimeout(timer);
+        reject(err);
+      }
+    });
+  }
+
   // ── Init ───────────────────────────────────────────────────────
   async function init() {
     // 1. Read the pending magnet from storage
@@ -98,7 +123,7 @@
 
     // 2. Fetch session for default download dir
     try {
-      const resp = await chrome.runtime.sendMessage({ type: 'GET_SESSION' });
+      const resp = await send({ type: 'GET_SESSION' });
       if (resp && resp.success && resp.data && resp.data['download-dir']) {
         inputDir.value = resp.data['download-dir'];
         inputDir.placeholder = resp.data['download-dir'];
@@ -129,7 +154,7 @@
 
     let result;
     try {
-      result = await chrome.runtime.sendMessage({
+      result = await send({
         type: 'ADD_TORRENT',
         options: {
           magnetUri,
