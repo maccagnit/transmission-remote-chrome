@@ -474,6 +474,50 @@
       </div>
     </div>
 
+    <!-- ── SECTION: Magnet Links ── -->
+    <div class="section" id="section-magnet">
+      <div class="section-header">
+        <span class="section-header-icon" id="icon-magnet-hdr"></span>
+        <span class="section-title">Magnet Links</span>
+      </div>
+      <div class="section-body">
+
+        <div class="toggle-wrapper">
+          <label class="toggle-switch" for="magnet-auto-add" title="Skip the confirmation dialog when a magnet link is clicked">
+            <input type="checkbox" id="magnet-auto-add">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <label class="toggle-label" for="magnet-auto-add">Add magnet links directly (skip the confirmation dialog)</label>
+        </div>
+        <div class="field-hint" style="margin-top:-4px">When enabled, clicking a magnet link starts the download immediately using the options below. Disable this to always review and customize each torrent before it's added.</div>
+
+        <div class="section-divider"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="magnet-default-dir">Default download directory (optional)</label>
+          <input type="text" class="input" id="magnet-default-dir" placeholder="Leave empty to use the server default" autocomplete="off" spellcheck="false">
+          <div class="field-hint">Used only when direct-add is enabled. Must be a path the Transmission daemon can write to.</div>
+        </div>
+
+        <div class="toggle-wrapper">
+          <label class="toggle-switch" for="magnet-start-paused" title="Add new torrents in a paused state">
+            <input type="checkbox" id="magnet-start-paused">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <label class="toggle-label" for="magnet-start-paused">Start new torrents paused</label>
+        </div>
+
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" id="btn-save-magnet">
+          <span id="icon-save-magnet" class="icon"></span>
+          Save Magnet Settings
+        </button>
+      </div>
+    </div>
+
     <!-- ── SECTION: Turtle Mode ── -->
     <div class="section" id="section-turtle">
       <div class="section-header">

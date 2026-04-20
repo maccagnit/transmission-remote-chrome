@@ -579,9 +579,13 @@ function bindTorrentItemEvents(li, torrent) {
     } else if (act === 'stop') {
       torrentAction('stop', [torrent.id]);
     } else if (act === 'remove-confirm') {
-      torrentAction('remove', [torrent.id], { deleteData: false });
+      if (confirm('Remove this torrent? (Files will be kept)')) {
+        torrentAction('remove', [torrent.id], { deleteData: false });
+      }
     } else if (act === 'remove-data-confirm') {
-      torrentAction('remove', [torrent.id], { deleteData: true });
+      if (confirm('Remove this torrent AND delete all data? This cannot be undone.')) {
+        torrentAction('remove', [torrent.id], { deleteData: true });
+      }
     } else if (act === 'expand') {
       chrome.tabs.create({ url: chrome.runtime.getURL(`pages/detail.html#${torrent.id}`) });
     } else if (act === 'more') {
@@ -735,10 +739,14 @@ els.ctxMenu.addEventListener('click', async (e) => {
       await torrentAction('reannounce', [id]);
       break;
     case 'remove':
-      await torrentAction('remove', [id], { deleteData: false });
+      if (confirm('Remove this torrent? (Files will be kept)')) {
+        await torrentAction('remove', [id], { deleteData: false });
+      }
       break;
     case 'remove-data':
-      await torrentAction('remove', [id], { deleteData: true });
+      if (confirm('Remove this torrent AND delete all data? This cannot be undone.')) {
+        await torrentAction('remove', [id], { deleteData: true });
+      }
       break;
     case 'open-detail':
       chrome.tabs.create({ url: chrome.runtime.getURL(`pages/detail.html#${id}`) });

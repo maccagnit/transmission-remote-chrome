@@ -752,19 +752,21 @@ function closeContextMenu() {
    ───────────────────────────────────────────────────────────── */
 
 function setupRowRemoveDropdown() {
-  document.getElementById('row-remove-keep').addEventListener('click', () => {
-    closeRowRemoveDropdown();
-    if (rowRemoveTargetId == null) return;
+  document.getElementById('row-remove-keep').addEventListener('click', (e) => {
+    e.stopPropagation();
     const id = rowRemoveTargetId;
+    closeRowRemoveDropdown();
+    if (id == null) return;
     if (confirm('Remove this torrent? (Files will be kept)')) {
       doAction('remove', [id], { deleteData: false });
     }
   });
 
-  document.getElementById('row-remove-delete').addEventListener('click', () => {
-    closeRowRemoveDropdown();
-    if (rowRemoveTargetId == null) return;
+  document.getElementById('row-remove-delete').addEventListener('click', (e) => {
+    e.stopPropagation();
     const id = rowRemoveTargetId;
+    closeRowRemoveDropdown();
+    if (id == null) return;
     if (confirm('Remove this torrent AND delete all data? This cannot be undone.')) {
       doAction('remove', [id], { deleteData: true });
     }
@@ -776,20 +778,33 @@ function openRowRemoveDropdown(anchorBtn, id) {
   const dd = document.getElementById('row-remove-dropdown');
   dd.classList.remove('hidden');
   const rect = anchorBtn.getBoundingClientRect();
+  const ddRect = dd.getBoundingClientRect();
+  const estHeight = ddRect.height || 88;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const top = spaceBelow < estHeight + 8 && rect.top > estHeight + 8
+    ? Math.max(8, rect.top - estHeight - 2)
+    : rect.bottom + 2;
   dd.style.position = 'fixed';
-  dd.style.top = (rect.bottom + 2) + 'px';
-  dd.style.right = (window.innerWidth - rect.right) + 'px';
+  dd.style.top = top + 'px';
+  dd.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
   dd.style.left = 'auto';
 
-  // Close on outside click
+  // Close on outside click (next tick so the opening click doesn't trigger it)
   setTimeout(() => {
-    document.addEventListener('click', closeRowRemoveDropdown, { once: true });
+    document.addEventListener('click', outsideClickCloseRowRemove);
   }, 0);
+}
+
+function outsideClickCloseRowRemove(e) {
+  const dd = document.getElementById('row-remove-dropdown');
+  if (dd && dd.contains(e.target)) return; // ignore clicks inside dropdown
+  closeRowRemoveDropdown();
 }
 
 function closeRowRemoveDropdown() {
   document.getElementById('row-remove-dropdown').classList.add('hidden');
   rowRemoveTargetId = null;
+  document.removeEventListener('click', outsideClickCloseRowRemove);
 }
 
 /* ─────────────────────────────────────────────────────────────

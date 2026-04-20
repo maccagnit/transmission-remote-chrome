@@ -28,6 +28,7 @@
   }
 
   injectIcon('icon-server',      'server',   14);
+  injectIcon('icon-magnet-hdr',  'magnet',   14);
   injectIcon('icon-turtle-hdr',  'turtle',   14);
   injectIcon('icon-speed-hdr',   'download', 14);
   injectIcon('icon-about-hdr',   'alert',    14);
@@ -36,6 +37,7 @@
   function setButtonIcons() {
     injectIcon('icon-test-conn',  'refresh',  13);
     injectIcon('icon-save-conn',  'check',    13);
+    injectIcon('icon-save-magnet','check',    13);
     injectIcon('icon-save-turtle','check',    13);
     injectIcon('icon-save-speed', 'check',    13);
   }
@@ -69,6 +71,12 @@
   const daysWeekends       = document.getElementById('days-weekends');
   const daysAll            = document.getElementById('days-all');
   const btnSaveTurtle      = document.getElementById('btn-save-turtle');
+
+  // ── DOM refs — Magnet ──────────────────────────────────────────
+  const magnetAutoAdd     = document.getElementById('magnet-auto-add');
+  const magnetDefaultDir  = document.getElementById('magnet-default-dir');
+  const magnetStartPaused = document.getElementById('magnet-start-paused');
+  const btnSaveMagnet     = document.getElementById('btn-save-magnet');
 
   // ── DOM refs — Speed ───────────────────────────────────────────
   const speedDownEnabled = document.getElementById('speed-down-enabled');
@@ -207,6 +215,36 @@
       }
     } catch (err) {
       showToast('Could not load config: ' + err.message, 'error');
+    }
+  }
+
+  // ── Load / save magnet preferences ─────────────────────────────
+  async function loadMagnetPrefs() {
+    try {
+      const stored = await chrome.storage.sync.get('magnetPrefs');
+      const p = stored.magnetPrefs || {};
+      magnetAutoAdd.checked     = !!p.autoAdd;
+      magnetDefaultDir.value    = p.defaultDir || '';
+      magnetStartPaused.checked = !!p.startPaused;
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  async function saveMagnetPrefs() {
+    btnSaveMagnet.disabled = true;
+    try {
+      const magnetPrefs = {
+        autoAdd:     magnetAutoAdd.checked,
+        defaultDir:  magnetDefaultDir.value.trim(),
+        startPaused: magnetStartPaused.checked,
+      };
+      await chrome.storage.sync.set({ magnetPrefs });
+      showToast('Magnet settings saved', 'success');
+    } catch (err) {
+      showToast('Save error: ' + err.message, 'error');
+    } finally {
+      btnSaveMagnet.disabled = false;
     }
   }
 
@@ -375,8 +413,9 @@
   syncSpeedInputs();
 
   // ── Button event listeners ─────────────────────────────────────
-  btnTestConn.addEventListener('click',  testConnection);
-  btnSaveConn.addEventListener('click',  saveConfig);
+  btnTestConn.addEventListener('click',   testConnection);
+  btnSaveConn.addEventListener('click',   saveConfig);
+  btnSaveMagnet.addEventListener('click', saveMagnetPrefs);
   btnSaveTurtle.addEventListener('click', saveTurtleSettings);
   btnSaveSpeed.addEventListener('click',  saveSpeedLimits);
 
@@ -402,6 +441,7 @@
   async function init() {
     loadVersion();
     await loadConfig();
+    await loadMagnetPrefs();
     await loadTurtleSettings();
   }
 

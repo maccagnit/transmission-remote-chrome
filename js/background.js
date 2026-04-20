@@ -142,13 +142,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function handleMagnetLink(magnetUri, tab) {
-  // Store magnet URI and open the add-torrent dialog
-  await chrome.storage.local.set({ 
+  // Check user preference: auto-add without confirmation dialog?
+  let prefs = {};
+  try {
+    const stored = await chrome.storage.sync.get('magnetPrefs');
+    prefs = stored.magnetPrefs || {};
+  } catch {
+    // Fall through with empty prefs
+  }
+
+  if (prefs.autoAdd) {
+    const result = await handleAddTorrent({
+      magnetUri,
+      downloadDir: prefs.defaultDir || undefined,
+      paused: !!prefs.startPaused,
+    });
+    if (!result || !result.success) {
+      const name = extractMagnetName(magnetUri);
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Could not add torrent',
+        message: (result && result.error) || `Failed to add ${name}`
+      });
+    }
+    return;
+  }
+
+  // Fallback: store magnet URI and open the add-torrent dialog
+  await chrome.storage.local.set({
     pendingMagnet: magnetUri,
-    pendingMagnetTab: tab?.id 
+    pendingMagnetTab: tab?.id
   });
-  
-  // Open a popup window for the magnet dialog
+
   chrome.windows.create({
     url: chrome.runtime.getURL('pages/magnet-dialog.html'),
     type: 'popup',
@@ -156,6 +182,16 @@ async function handleMagnetLink(magnetUri, tab) {
     height: 480,
     focused: true
   });
+}
+
+function extractMagnetName(magnetUri) {
+  try {
+    const url = new URL(magnetUri);
+    const dn = url.searchParams.get('dn');
+    return dn ? decodeURIComponent(dn) : 'torrent';
+  } catch {
+    return 'torrent';
+  }
 }
 
 async function handleAddTorrent(options) {

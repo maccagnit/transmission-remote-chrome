@@ -2,65 +2,43 @@
  * Content Script
  * Intercepts magnet link clicks on any webpage and routes them
  * to the background service worker for handling.
+ *
+ * A single document-level capturing listener is enough — it uses
+ * `closest()` so it catches clicks on statically AND dynamically
+ * inserted magnet links without needing per-link listeners.
  */
 
 (function() {
   'use strict';
 
-  // Listen for clicks on magnet links
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href^="magnet:"]');
-    if (!link) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const magnetUri = link.href;
-    
-    chrome.runtime.sendMessage({
-      type: 'MAGNET_CLICKED',
-      magnetUri: magnetUri
-    });
-  }, true);
-
-  // Also handle middle-clicks
-  document.addEventListener('auxclick', (e) => {
-    if (e.button !== 1) return; // middle click only
-    const link = e.target.closest('a[href^="magnet:"]');
-    if (!link) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    chrome.runtime.sendMessage({
-      type: 'MAGNET_CLICKED',
-      magnetUri: link.href
-    });
-  }, true);
-
-  // Observe DOM changes to catch dynamically added magnet links
-  // and prevent the browser from navigating to them
-  const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType !== 1) continue;
-        const links = node.querySelectorAll?.('a[href^="magnet:"]') || [];
-        links.forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            chrome.runtime.sendMessage({
-              type: 'MAGNET_CLICKED',
-              magnetUri: link.href
-            });
-          }, true);
-        });
-      }
+  function sendMagnet(magnetUri) {
+    try {
+      chrome.runtime.sendMessage({ type: 'MAGNET_CLICKED', magnetUri });
+    } catch {
+      // Extension context invalidated — nothing to do
     }
-  });
+  }
 
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
+  // Left-click on any magnet link
+  document.addEventListener('click', (e) => {
+    // Honour modifier-clicks (user may Ctrl/Cmd-click to open in new tab)
+    if (e.defaultPrevented) return;
+    const link = e.target.closest('a[href^="magnet:"]');
+    if (!link) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    sendMagnet(link.href);
+  }, true);
+
+  // Middle-click
+  document.addEventListener('auxclick', (e) => {
+    if (e.button !== 1) return;
+    const link = e.target.closest('a[href^="magnet:"]');
+    if (!link) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    sendMagnet(link.href);
+  }, true);
 })();
